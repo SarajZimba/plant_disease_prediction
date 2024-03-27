@@ -6,6 +6,7 @@ from api.serializers.image import ImageSerializer
 import tensorflow as tf
 import numpy as np 
 from io import BytesIO
+from solution.models import Solution
 
 class UploadImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -22,6 +23,12 @@ class UploadImageView(APIView):
             prediction = model.predict(input_arr)
             result_index = np.argmax(prediction)
 
+            print(result_index)
+
+            new_result_index = result_index + 1
+
+            solution = Solution.objects.get(pk=new_result_index)
+
 
             class_name = ['Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
                         'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 
@@ -37,8 +44,14 @@ class UploadImageView(APIView):
                         'Tomato___Septoria_leaf_spot', 'Tomato___Spider_mites Two-spotted_spider_mite', 
                         'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus',
                         'Tomato___healthy']
+            
+            message = {
+                "name" : solution.disease_name,
+                "cause": solution.cause,
+                "solution" : solution.solution
+            }
 
-            return Response({'message': class_name[result_index]})
+            return Response({'plant_disease': message})
         
 
         else:
